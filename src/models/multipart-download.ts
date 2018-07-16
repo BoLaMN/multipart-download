@@ -12,12 +12,6 @@ export interface MultipartOperation {
     start(url: string, options?: StartOptions): MultipartOperation;
 }
 
-export interface MultipartProgress {
-    readonly percent: string;
-    readonly downloaded: number;
-    readonly total: number;
-}
-
 export class MultipartDownload extends events.EventEmitter implements MultipartOperation {
     private static readonly DEFAULT_NUMBER_OF_CONNECTIONS: number = 1;
     private static readonly SINGLE_CONNECTION: number = 1;
@@ -83,14 +77,12 @@ export class MultipartDownload extends events.EventEmitter implements MultipartO
                         this.emit('data', data, offset);
                     
                         downloaded += data.length
-
-                        const progress: MultipartProgress = {
-                            percent: data.length / metadata.contentLength * 100 | 0
-                            downloaded: downloaded
-                            total: metadata.contentLength
-                        };
-
-                        this.emit('progress', progress)
+                    
+                        this.emit('progress', {
+                          percent: downloaded / metadata.contentLength * 100 | 0,
+                          downloaded: downloaded,
+                          total: metadata.contentLength
+                        });
                     })
                     .on('end', (output) => {
                         this.emit('end', output);
